@@ -81,6 +81,17 @@ The MCP connector URL is:
 https://example.trycloudflare.com/mcp
 ```
 
+### ngrok alternative
+
+If you use ngrok instead of Cloudflare Tunnel:
+
+```powershell
+ngrok http 8787
+```
+
+Then use the forwarding host it prints, for example
+`https://<subdomain>.ngrok.app/mcp`.
+
 ## Option B: run in background on Windows
 
 Start the MCP server:
@@ -131,6 +142,31 @@ Root check:
 ```powershell
 Invoke-RestMethod https://<tunnel-host>/
 ```
+
+MCP handshake and tool listing. Use `curl.exe` with a JSON body file:
+PowerShell `Invoke-WebRequest` can hang on the streaming `/mcp` POST, so
+`curl.exe` is more reliable here.
+
+```powershell
+cd $env:TEMP
+Set-Content init.json '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"probe","version":"1.0"}}}' -NoNewline -Encoding ascii
+Set-Content tools.json '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' -NoNewline -Encoding ascii
+
+curl.exe -s -S -X POST https://<tunnel-host>/mcp `
+  -H "Content-Type: application/json" `
+  -H "Accept: application/json, text/event-stream" `
+  -d "@init.json"
+
+curl.exe -s -S -X POST https://<tunnel-host>/mcp `
+  -H "Content-Type: application/json" `
+  -H "Accept: application/json, text/event-stream" `
+  -d "@tools.json"
+```
+
+The `initialize` call returns `serverInfo.name = mcp-bacen`, and `tools/list`
+returns the seven tools (`search`, `fetch`, `list_sgs_series`,
+`get_sgs_series`, `list_ptax_currencies`, `get_ptax_dollar_quotes`,
+`get_ptax_currency_quotes`).
 
 MCP Inspector:
 
