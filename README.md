@@ -40,6 +40,9 @@ Teste com o MCP Inspector:
 npm run inspect
 ```
 
+Para validar o MCP no ChatGPT usando um tunel HTTPS local, siga
+[`docs/local-https-tunnel.md`](docs/local-https-tunnel.md).
+
 ## Exemplos de prompts
 
 ```text
